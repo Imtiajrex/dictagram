@@ -3,7 +3,7 @@
 </script>
 
 <button
-	class={' bg-primary text-white px-7 py-4 flex items-center justify-center rounded-md hover:scale-105 active:scale-95 transition ' +
+	class={' bg-primary text-white px-10 py-2 flex items-center justify-center rounded-lg hover:scale-105 active:scale-95 transition ' +
 		className}
 >
 	<slot />
