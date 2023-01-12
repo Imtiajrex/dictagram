@@ -7,16 +7,8 @@
 	import type { toolType } from '../types/editor/toolType';
 	let tool = getContext('active-tool-drawer') as Writable<toolType>;
 	let adjustment = getContext('adjustments-active') as Writable<boolean>;
-	const ToolDrawer = {
-		add: ElementDrawer,
-		layer: LayerDrawer
-	};
-	$: console.log($tool);
-	$: Drawer = $tool ? ToolDrawer[$tool] : null;
-	$: $tool && console.log(ToolDrawer[$tool]);
 </script>
 
-{#if Drawer != null}
-	<Drawer />
-{/if}
+<ElementDrawer show={$tool == 'add'} />
+<LayerDrawer show={$tool == 'layer'} />
 <AdjustmentDrawer bind:show={$adjustment} />

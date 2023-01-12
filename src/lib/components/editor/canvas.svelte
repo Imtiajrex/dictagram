@@ -11,5 +11,5 @@
 </script>
 
 <div
-	class={`  w-full h-full bg-white border-2 border-primary mx-auto rounded-md ${sizes[$device]}`}
+	class={` w-full h-full bg-white border-2 border-primary mx-auto rounded-md ${sizes[$device]}`}
 />

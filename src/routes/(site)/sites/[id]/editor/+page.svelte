@@ -13,11 +13,11 @@
 	let adjustments = setContext('adjustments-active', writable(false));
 </script>
 
-<div class="p-5 pt-0 h-32">
+<div class="p-5 py-0 h-28">
 	<Header editor />
 	<Tools />
 </div>
-<div class="relative w-full h-5/6 overflow-hidden">
+<div class="relative w-full h-full overflow-hidden p-2" style="height:88%">
 	<Canvas />
 	<ToolsDrawer />
 </div>

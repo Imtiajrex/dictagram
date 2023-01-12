@@ -2,6 +2,6 @@
 	import '../../app.postcss';
 </script>
 
-<div class="md:h-screen h-full">
+<div class="h-screen">
 	<slot />
 </div>
