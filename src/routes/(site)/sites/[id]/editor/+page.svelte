@@ -8,6 +8,7 @@
 	import Canvas from '$lib/components/editor/canvas.svelte';
 	import { getElements, setElements, type elementsType } from '$lib/utils/elements';
 	import { onDestroy } from 'svelte';
+	import Element from '$lib/components/editor/element.svelte';
 
 	type deviceSizesType = 'desktop' | 'tablet' | 'mobile';
 	setContext('active-tool-drawer', writable<toolType>(null));
@@ -18,6 +19,7 @@
 	onDestroy(() => {
 		$elements = [];
 	});
+	let selectedElement = '';
 </script>
 
 <div class="p-5 py-0 h-28">
@@ -26,5 +28,6 @@
 </div>
 <div class="relative w-full h-full overflow-hidden p-2" style="height:88%">
 	<Canvas />
+
 	<ToolsDrawer />
 </div>

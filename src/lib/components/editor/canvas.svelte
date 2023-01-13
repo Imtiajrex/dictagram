@@ -46,7 +46,7 @@
 		selectedElement = '';
 		e.stopPropagation();
 	}}
-	class={` w-full h-full bg-white border-2 border-primary mx-auto rounded-md ${sizes[$device]}`}
+	class={`overflow-auto relative w-full h-full bg-white border-2 border-primary mx-auto rounded-md ${sizes[$device]}`}
 >
 	{#if $elements}
 		{#each $elements as { id, Component, children, hierarchy, style, classname, elementId, content, name }}
