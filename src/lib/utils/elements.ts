@@ -12,30 +12,24 @@ export const elementsList = [
 
 export type elementsKeyListType = 'heading' | 'paragraph' | 'container' | 'grid';
 export type hierarchyType = string[];
+export type styleType = {
+	desktop?: string;
+	mobile?: string;
+	tablet?: string;
+};
 export type elementType = {
 	name: string;
 	Component: any;
 	id: string;
 	elementId: string;
 	classname?: string;
-	style?: {
-		desktop?: string;
-		mobile?: string;
-		tablet?: string;
-	};
+	style?: styleType;
 	content?: string;
 	hierarchy: hierarchyType;
 	children: elementType[];
 };
 export type elementsType = Writable<elementType[]>;
 const elements = writable<elementType[]>([]);
-const currentElement = writable<hierarchyType>([]);
-export const getCurrentElement = () => {
-	const _elements = get(elements) as elementType[];
-	const _currentElement = get(currentElement) as hierarchyType;
-};
-export const setCurrentElement = (hierarchy: hierarchyType) =>
-	hierarchy.length === 0 ? currentElement.set([]) : currentElement.set(hierarchy);
 const elementsMap = {
 	heading: {
 		name: 'Heading',
@@ -71,7 +65,13 @@ export const getElement = ({
 }) => {
 	console.log(elements);
 };
-const generateID = () => Math.random().toString(36).substring(2, 9);
+const usedIds = [] as string[];
+const generateID = (): string => {
+	let id = Math.random().toString(36).substring(2, 9);
+	if (usedIds.includes(id)) id = generateID();
+	usedIds.push(id);
+	return id;
+};
 export const addElement = ({
 	elementID,
 	hierarchy = []
@@ -80,12 +80,11 @@ export const addElement = ({
 	hierarchy?: hierarchyType;
 }) => {
 	if (hierarchy.length === 0) {
-		const element = elementsMap[elementID];
-		element.id = generateID();
+		const element = { ...elementsMap[elementID] };
+		element.id = elementID + '_' + generateID();
 		element.elementId = elementID;
-
+		element.hierarchy = [element.id];
 		elements.update((elements) => {
-			console.log(elements);
 			return [...elements, element];
 		});
 		return;
@@ -103,4 +102,7 @@ export const assignElement = ({
 };
 export const removeElement = ({ hierarchy }: { hierarchy: hierarchyType }) => {
 	console.log(hierarchy);
+	elements.update((elements) => {
+		return elements.filter((element) => element.id !== hierarchy[0]);
+	});
 };
