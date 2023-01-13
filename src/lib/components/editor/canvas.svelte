@@ -7,12 +7,14 @@
 		addElement,
 		getElements,
 		type elementsKeyListType,
-		type elementsType
+		type elementsType,
+		type styleType
 	} from '$lib/utils/elements';
 	import Element from './element.svelte';
 
 	let device = getContext('active-device-size') as Writable<string>;
 	let tool = getContext('active-tool-drawer') as Writable<string | null>;
+	let customStyleContext = getContext('custom-style') as Writable<styleType | null>;
 	const sizes = {
 		desktop: 'max-w-screen-2xl',
 		tablet: 'max-w-screen-md',
@@ -37,13 +39,9 @@
 	}}
 	draggable="false"
 	on:dragstart|preventDefault
-	on:drag|preventDefault
-	on:dragenter|preventDefault
-	on:dragleave|preventDefault
-	on:dragover|preventDefault
-	on:dragend|preventDefault
 	on:click={(e) => {
 		selectedElement = '';
+		customStyleContext.set(null);
 		e.stopPropagation();
 	}}
 	class={`overflow-auto relative w-full h-full bg-white border-2 border-primary mx-auto rounded-md ${sizes[$device]}`}

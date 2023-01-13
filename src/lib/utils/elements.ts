@@ -84,6 +84,11 @@ export const addElement = ({
 		element.id = elementID + '_' + generateID();
 		element.elementId = elementID;
 		element.hierarchy = [element.id];
+		element.style = {
+			desktop: '',
+			mobile: '',
+			tablet: ''
+		};
 		elements.update((elements) => {
 			return [...elements, element];
 		});

@@ -4,8 +4,8 @@
 
 	import {
 		Adjustments,
-		DeviceCameraPhone,
 		DeviceDesktop,
+		DeviceMobile,
 		DeviceTablet,
 		Plus,
 		Stack
@@ -40,7 +40,7 @@
 		},
 		{
 			name: 'mobile',
-			Icon: DeviceCameraPhone
+			Icon: DeviceMobile
 		}
 	] as { name: deviceSizeType; Icon: any }[];
 </script>
