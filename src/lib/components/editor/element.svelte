@@ -20,6 +20,7 @@
 	export let selectedElement: string;
 
 	let customStyleContext = getContext('custom-style') as Writable<any>;
+	let device = getContext('active-device-size') as Writable<'desktop' | 'mobile' | 'tablet'>;
 
 	let defaultWidth: number, defaultHeight: number;
 	let customPadding = {
@@ -28,17 +29,29 @@
 		bottom: 20,
 		left: 20
 	};
+	let customStyler: Element;
 	onMount(() => {
 		const component = document.getElementById(id) as Element;
 		defaultWidth = component.getBoundingClientRect().width;
 		defaultHeight = component.getBoundingClientRect().height;
-	});
-	$: active = selectedElement == id;
-	$: {
-		style = $customStyleContext;
-	}
 
-	$: customStyle = `position:relative;width:${defaultWidth}px;height:${defaultHeight}px;padding:${customPadding.top}px ${customPadding.right}px ${customPadding.bottom}px ${customPadding.left}px;${style.desktop}`;
+		customStyler = document.getElementById(`style_${id}`) as Element;
+	});
+
+	$: active = selectedElement == id;
+	customStyleContext.subscribe((value) => {
+		if (value) {
+			style = value;
+			if (customStyler)
+				customStyler.innerHTML = `<style>
+					#${id} {
+						${style['desktop']}
+					}
+				</style>`;
+		}
+	});
+
+	$: customStyle = `position:relative;width:${defaultWidth}px;height:${defaultHeight}px;padding:${customPadding.top}px ${customPadding.right}px ${customPadding.bottom}px ${customPadding.left}px;`;
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -62,6 +75,8 @@
 		<Resizer bind:defaultWidth bind:defaultHeight bind:padding={customPadding} {hierarchy} />
 	{/if}
 </svelte:element>
+
+<span id={`style_${id}`} />
 
 <style>
 	textarea {
