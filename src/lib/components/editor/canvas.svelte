@@ -7,14 +7,14 @@
 		addElement,
 		getElements,
 		type elementsKeyListType,
-		type elementsType,
-		type styleType
+		type elementsType
 	} from '$lib/utils/elements';
+	import type { customStyleType } from '$lib/utils/elements';
 	import Element from './element.svelte';
 
 	let device = getContext('active-device-size') as Writable<string>;
 	let tool = getContext('active-tool-drawer') as Writable<string | null>;
-	let customStyleContext = getContext('custom-style') as Writable<styleType | null>;
+	let customStyleContext = getContext('custom-style') as Writable<customStyleType | null>;
 	const sizes = {
 		desktop: 'max-w-screen-2xl',
 		tablet: 'max-w-screen-md',
@@ -44,7 +44,7 @@
 		customStyleContext.set(null);
 		e.stopPropagation();
 	}}
-	class={`overflow-auto relative w-full h-full bg-white border-2 border-primary mx-auto rounded-md ${sizes[$device]}`}
+	class={`canvas overflow-auto relative w-full h-full bg-white border-2 border-primary mx-auto rounded-md ${sizes[$device]}`}
 >
 	{#if $elements}
 		{#each $elements as { id, Component, children, hierarchy, style, classname, elementId, content, name }}
@@ -63,3 +63,9 @@
 		{/each}
 	{/if}
 </div>
+
+<style>
+	.canvas {
+		container-type: inline-size;
+	}
+</style>
