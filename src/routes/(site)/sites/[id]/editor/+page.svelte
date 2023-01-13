@@ -6,13 +6,13 @@
 	import { setContext } from 'svelte';
 	import type { toolType } from '$lib/components/types/editor/toolType';
 	import Canvas from '$lib/components/editor/canvas.svelte';
-	import { getElements, setElements, type elementsType } from '$lib/utils/elements';
+	import { getElements, setElements, type elementsType, type styleType } from '$lib/utils/elements';
 	import { onDestroy } from 'svelte';
-	import Element from '$lib/components/editor/element.svelte';
 
 	type deviceSizesType = 'desktop' | 'tablet' | 'mobile';
 	setContext('active-tool-drawer', writable<toolType>(null));
 	setContext('active-device-size', writable<deviceSizesType>('desktop'));
+	setContext('custom-style', writable<styleType | null>(null));
 	setContext('adjustments-active', writable(false));
 	setElements();
 	let elements = getElements() as elementsType;

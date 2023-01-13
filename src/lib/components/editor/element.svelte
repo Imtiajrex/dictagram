@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { elementType, hierarchyType, styleType } from '$lib/utils/elements';
-	import { onMount } from 'svelte';
+	import { getContext, onMount } from 'svelte';
+	import type { Writable } from 'svelte/store';
 	import Resizer from './resizer.svelte';
 
 	export let name: string;
@@ -8,7 +9,7 @@
 	export let id: string;
 	export let elementId: string;
 	export let classname: string = '';
-	export const style: styleType = {
+	export let style: styleType = {
 		desktop: '',
 		mobile: '',
 		tablet: ''
@@ -17,6 +18,8 @@
 	export let hierarchy: hierarchyType;
 	export const children: elementType[] = [];
 	export let selectedElement: string;
+
+	let customStyleContext = getContext('custom-style') as Writable<any>;
 
 	let defaultWidth: number, defaultHeight: number;
 	let customPadding = {
@@ -31,8 +34,11 @@
 		defaultHeight = component.getBoundingClientRect().height;
 	});
 	$: active = selectedElement == id;
+	$: {
+		style = $customStyleContext;
+	}
 
-	$: customStyle = `position:relative;width:${defaultWidth}px;height:${defaultHeight}px;padding:${customPadding.top}px ${customPadding.right}px ${customPadding.bottom}px ${customPadding.left}px;`;
+	$: customStyle = `position:relative;width:${defaultWidth}px;height:${defaultHeight}px;padding:${customPadding.top}px ${customPadding.right}px ${customPadding.bottom}px ${customPadding.left}px;${style.desktop}`;
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -42,6 +48,7 @@
 	class={`${classname} ${elementId}`}
 	on:click={(e) => {
 		selectedElement = id;
+		customStyleContext.set(style);
 		e.stopPropagation();
 	}}
 	{id}
