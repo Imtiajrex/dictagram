@@ -6,11 +6,18 @@
 	import { setContext } from 'svelte';
 	import type { toolType } from '$lib/components/types/editor/toolType';
 	import Canvas from '$lib/components/editor/canvas.svelte';
+	import { getElements, setElements, type elementsType } from '$lib/utils/elements';
+	import { onDestroy } from 'svelte';
 
 	type deviceSizesType = 'desktop' | 'tablet' | 'mobile';
-	let tool = setContext('active-tool-drawer', writable<toolType>(null));
-	let device = setContext('active-device-size', writable<deviceSizesType>('desktop'));
-	let adjustments = setContext('adjustments-active', writable(false));
+	setContext('active-tool-drawer', writable<toolType>(null));
+	setContext('active-device-size', writable<deviceSizesType>('desktop'));
+	setContext('adjustments-active', writable(false));
+	setElements();
+	let elements = getElements() as elementsType;
+	onDestroy(() => {
+		$elements = [];
+	});
 </script>
 
 <div class="p-5 py-0 h-28">

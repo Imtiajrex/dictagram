@@ -1,5 +1,5 @@
 <script>
-	import { fly, slide } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 
 	export let className = 'top-0 left-0 max-w-sm rounded-r-xl';
 	export let x = -500;
