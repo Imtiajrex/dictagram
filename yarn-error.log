@@ -1,5 +1,5 @@
 Arguments: 
-  C:\Program Files\nodejs\node.exe C:\Users\imtia\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js add svelte-drag-and-drop-actions
+  C:\Program Files\nodejs\node.exe C:\Users\imtia\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js install
 
 PATH: 
   C:\Python310\Scripts\;C:\Python310\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\Program Files\Microsoft VS Code\bin;C:\Program Files\Git\cmd;C:\Program Files\OpenJDK\openjdk-11.0.16_8\bin;C:\ProgramData\ComposerSetup\bin;C:\Program Files (x86)\dotnet\;C:\Program Files\PuTTY\;C:\Program Files\dotnet\;C:\Users\imtia\AppData\Local\Microsoft\WindowsApps;C:\Users\imtia\AppData\Roaming\npm;C:\Users\imtia\AppData\Local\Android\Sdk\platforms;C:\Users\imtia\AppData\Local\Android\Sdk\platform-tools;E:\Software\xampp\php;C:\Users\imtia\AppData\Roaming\Composer\vendor\bin;C:\xampp\php;C:\MinGW\bin;C:\xampp\mysql\bin;C:\Users\imtia\.dotnet\tools

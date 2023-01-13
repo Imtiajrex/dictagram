@@ -34,6 +34,8 @@
 	"dependencies": {
 		"autoprefixer": "^10.4.13",
 		"postcss": "^8.4.21",
+		"svelte-drag-and-drop-actions": "^1.0.0",
+		"svelte-touch-to-mouse": "^1.0.0",
 		"tabler-icons-svelte": "^1.9.1",
 		"tailwindcss": "^3.2.4"
 	}
