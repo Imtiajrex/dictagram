@@ -12,10 +12,10 @@ export const elementsList = [
 
 export type elementsKeyListType = 'heading' | 'paragraph' | 'container' | 'grid';
 export type hierarchyType = string[];
-export type styleType = {
-	desktop?: string;
-	mobile?: string;
-	tablet?: string;
+export type customStyleType = {
+	desktop: string;
+	mobile: string;
+	tablet: string;
 };
 export type elementType = {
 	name: string;
@@ -23,7 +23,7 @@ export type elementType = {
 	id: string;
 	elementId: string;
 	classname?: string;
-	style?: styleType;
+	style?: customStyleType;
 	content?: string;
 	hierarchy: hierarchyType;
 	children: elementType[];
