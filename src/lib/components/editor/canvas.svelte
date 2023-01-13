@@ -67,5 +67,6 @@
 <style>
 	.canvas {
 		container-type: inline-size;
+		container-name: canvas;
 	}
 </style>

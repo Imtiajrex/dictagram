@@ -97,13 +97,13 @@
 		left: 'cursor-w-resize',
 		all: 'cursor-se-resize'
 	};
-	$: paddedWidth = defaultWidth - padding.left - padding.right;
-	$: paddedHeight = defaultHeight - padding.top - padding.bottom;
+	$: paddedWidth = `100cqw`;
+	$: paddedHeight = defaultHeight - padding.top - padding.bottom + 'px';
 	$: paddingResizerStyle = {
-		top: `top: ${padding.top}px;width: ${paddedWidth}px;height: 2px;`,
-		bottom: `bottom: ${padding.bottom}px;width: ${paddedWidth}px;height: 2px;`,
-		left: `left: ${padding.left}px;top: ${padding.top}px;height: ${paddedHeight}px;width: 2px;`,
-		right: `right: ${padding.right}px;top: ${padding.top}px;height: ${paddedHeight}px;width: 2px;`,
+		top: `top: ${padding.top}px;width: ${paddedWidth};height: 2px;`,
+		bottom: `bottom: ${padding.bottom}px;width: ${paddedWidth};height: 2px;`,
+		left: `left: ${padding.left}px;top: ${padding.top}px;height: ${paddedHeight};width: 2px;`,
+		right: `right: ${padding.right}px;top: ${padding.top}px;height: ${paddedHeight};width: 2px;`,
 		all: `bottom: ${padding.bottom - 3}px;right: ${
 			padding.right - 3
 		}px;width: 8px;height: 8px;border-radius: 50%;border: 2px solid black; background:white`

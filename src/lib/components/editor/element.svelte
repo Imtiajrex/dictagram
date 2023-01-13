@@ -30,13 +30,28 @@
 		left: 20
 	};
 	let customStyler: Element;
+	let elementComponent: Element;
+	let editor: HTMLTextAreaElement;
+
 	onMount(() => {
-		const component = document.getElementById(id) as Element;
-		defaultWidth = component.getBoundingClientRect().width;
-		defaultHeight = component.getBoundingClientRect().height;
+		editor = document.getElementById(`textarea_${id}`) as HTMLTextAreaElement;
+		elementComponent = document.getElementById(id) as Element;
+		getWidthHeight();
 
 		customStyler = document.getElementById(`style_${id}`) as Element;
 	});
+	const getWidthHeight = () => {
+		if (elementComponent) {
+			defaultWidth = elementComponent.getBoundingClientRect().width;
+			defaultHeight = elementComponent.getBoundingClientRect().height;
+		}
+	};
+	device.subscribe((value) => {
+		getWidthHeight();
+	});
+	$: if (content.length > 0) {
+		getWidthHeight();
+	}
 
 	$: active = selectedElement == id;
 	customStyleContext.subscribe((value) => {
@@ -47,12 +62,12 @@
 					#${id} {
 						${style['desktop']}
 					}
-					@container (max-width: 768px) {
+					@container canvas (max-width: 768px) and (min-width: 501px) {
 						#${id} {
 							${style['tablet']}
 						}
 					}
-					@container (max-width: 500px) {
+					@container canvas (max-width: 500px) {
 						#${id} {
 							${style['mobile']}
 						}
@@ -61,23 +76,30 @@
 		}
 	});
 
-	$: customStyle = `position:relative;width:${defaultWidth}px;height:${defaultHeight}px;padding:${customPadding.top}px ${customPadding.right}px ${customPadding.bottom}px ${customPadding.left}px;`;
+	$: customStyle = `position:relative;width:100%;max-width:${defaultWidth}px;min-height:${defaultHeight}px;padding:${customPadding.top}px ${customPadding.right}px ${customPadding.bottom}px ${customPadding.left}px;`;
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <svelte:element
 	this={Component}
 	style={customStyle}
-	class={`${classname} ${elementId}`}
+	class={`${classname} ${elementId} element`}
 	on:click={(e) => {
 		selectedElement = id;
 		customStyleContext.set(style);
+		if (editor) editor.focus();
 		e.stopPropagation();
 	}}
 	{id}
 >
+	<textarea
+		id={`textarea_${id}`}
+		bind:value={content}
+		disabled={!active}
+		class="opacity-0 absolute top-0 left-0 w-0 h-0"
+	/>
 	{#if content}
-		<textarea bind:value={content} disabled={!active} />
+		{content}
 	{:else}
 		{name}
 	{/if}
@@ -99,5 +121,9 @@
 	}
 	textarea:focus {
 		outline: none;
+	}
+	.element {
+		container-type: inline-size;
+		container-name: element;
 	}
 </style>
