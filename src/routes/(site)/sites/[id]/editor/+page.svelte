@@ -13,6 +13,7 @@
 		type customStyleType
 	} from '$lib/utils/elements';
 	import { onDestroy } from 'svelte';
+	import Element from '$lib/components/editor/element.svelte';
 
 	type deviceSizesType = 'desktop' | 'tablet' | 'mobile';
 	setContext('active-tool-drawer', writable<toolType>(null));
@@ -35,4 +36,22 @@
 	<Canvas />
 
 	<ToolsDrawer />
+</div>
+<div class="min-h-screen p-10">
+	{#if $elements}
+		{#each $elements as { id, Component, children, hierarchy, style, classname, elementId, content, name }}
+			<Element
+				bind:id
+				bind:Component
+				bind:children
+				bind:hierarchy
+				bind:style
+				bind:classname
+				bind:elementId
+				bind:content
+				bind:name
+				bind:selectedElement
+			/>
+		{/each}
+	{/if}
 </div>
