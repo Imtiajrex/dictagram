@@ -1,47 +1,54 @@
-<script>
-	// @ts-nocheck
-
-	import { removeElement } from '$lib/utils/elements';
+<script lang="ts">
+	import { removeElement, type customStyleType, type hierarchyType } from '$lib/utils/elements';
 
 	import { asDraggable } from 'svelte-drag-and-drop-actions';
 
-	export let defaultWidth, defaultHeight;
+	export let containerWidth: number, containerHeight: number;
 	export let padding = {
 		top: 0,
 		right: 0,
 		bottom: 0,
 		left: 0
-	};
+	} as { [key in 'top' | 'bottom' | 'left' | 'right']: number };
+	export let style: customStyleType;
 
 	let resizing = false;
 	let paddingResizing = false;
-	export let hierarchy = [];
-	let initialX, initialY, initialWidth, initialHeight;
-	let initialPadX,
-		initialPadY,
-		initialPadding = {};
+	export let hierarchy = [] as hierarchyType;
+	let initialX: number, initialY: number, initialWidth: number, initialHeight: number;
+	let initialPadX: number,
+		initialPadY: number,
+		initialPadding = {} as { [key in 'top' | 'bottom' | 'left' | 'right']: number };
 
 	/**** map all touch events to mouse events ****/
 
 	import mapTouchToMouseFor from 'svelte-touch-to-mouse';
+	import type { Writable } from 'svelte/store';
+	import { getContext } from 'svelte';
 	import { Trash } from 'tabler-icons-svelte';
 	mapTouchToMouseFor('.resizer');
 
+	let device = getContext('active-device-size') as Writable<'desktop' | 'mobile' | 'tablet'>;
+
 	/**** Svelte Event Handling ****/
-
-	function onDragMove(x, y, dir) {
+	type paddingTypes = 'top' | 'right' | 'bottom' | 'left' | 'all';
+	function onDragMove(x: number, y: number, dir: paddingTypes) {
 		if (resizing) {
-			console.log('resizing');
-			if (dir == 'top' || dir == 'bottom' || dir == 'all')
-				defaultHeight = initialHeight + (y - initialY) * (dir == 'top' ? -1 : 1);
-
-			if (dir == 'left' || dir == 'right' || dir == 'all')
-				defaultWidth = initialWidth + (x - initialX) * (dir == 'left' ? -1 : 1);
+			if (dir == 'top' || dir == 'bottom' || dir == 'all') {
+				containerHeight = initialHeight + (y - initialY) * (dir == 'top' ? -1 : 1);
+				style[$device]['min-height'] = containerHeight + 'px';
+			}
+			if (dir == 'left' || dir == 'right' || dir == 'all') {
+				containerWidth = initialWidth + (x - initialX) * (dir == 'left' ? -1 : 1);
+				style[$device]['max-width'] = containerWidth + 'px';
+			}
 		} else {
 			initialX = x;
 			initialY = y;
-			initialWidth = defaultWidth;
-			initialHeight = defaultHeight;
+			const width = Number(String(style[$device]['max-width']).replace('px', ''));
+			const height = Number(String(style[$device]['min-height']).replace('px', ''));
+			initialWidth = width > 0 ? width : containerWidth;
+			initialHeight = height > 0 ? height : containerHeight;
 			resizing = true;
 		}
 	}
@@ -50,7 +57,7 @@
 		paddingResizing = false;
 	}
 
-	function onDragPadResizer(x, y, dir) {
+	function onDragPadResizer(x: number, y: number, dir: paddingTypes) {
 		console.log('resizing padding');
 		if (paddingResizing) {
 			if (dir == 'all') {
@@ -82,7 +89,7 @@
 		}
 	}
 
-	const dir = ['top', 'right', 'bottom', 'left', 'all'];
+	const dir = ['top', 'right', 'bottom', 'left', 'all'] as paddingTypes[];
 	const dirClassResizer = {
 		top: 'bg-accent top-0 left-0 w-full h-0.5',
 		right: 'bg-accent top-0 right-0 w-0.5 h-full',
@@ -96,7 +103,7 @@
 		bottom: 'cursor-s-resize',
 		left: 'cursor-w-resize',
 		all: 'cursor-se-resize'
-	};
+	} as { [key in paddingTypes]: string };
 	$: paddedWidth = `100cqw`;
 	$: paddedHeight = `calc(100% - ${padding.top + padding.bottom}px)`;
 	$: paddingResizerStyle = {
@@ -107,7 +114,7 @@
 		all: `bottom: ${padding.bottom - 3}px;right: ${
 			padding.right - 3
 		}px;width: 8px;height: 8px;border-radius: 50%;border: 2px solid black; background:white`
-	};
+	} as { [key in paddingTypes]: string };
 	const remove = () => {
 		removeElement({
 			hierarchy
