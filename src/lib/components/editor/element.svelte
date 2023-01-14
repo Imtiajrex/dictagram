@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { elementType, hierarchyType, customStyleType } from '$lib/utils/elements';
-	import { getContext, onMount } from 'svelte';
-	import type { Writable } from 'svelte/store';
+	import { getContext, onDestroy, onMount } from 'svelte';
+	import type { Unsubscriber, Writable } from 'svelte/store';
 	import Resizer from './resizer.svelte';
+	import * as _ from 'lodash';
 
 	export let name: string;
 	export let Component: any;
@@ -19,7 +20,10 @@
 	export const children: elementType[] = [];
 	export let selectedElement: string;
 
-	let customStyleContext = getContext('custom-style') as Writable<customStyleType | null>;
+	let customStyleContext = getContext('custom-style') as Writable<{
+		style: customStyleType;
+		id: string;
+	}>;
 	let device = getContext('active-device-size') as Writable<'desktop' | 'mobile' | 'tablet'>;
 
 	let defaultWidth: number, defaultHeight: number;
@@ -46,17 +50,11 @@
 			defaultHeight = elementComponent.getBoundingClientRect().height;
 		}
 	};
-	device.subscribe((value) => {
-		getWidthHeight();
-	});
-	$: if (content.length > 0) {
-		getWidthHeight();
-	}
 
 	$: active = selectedElement == id;
-	customStyleContext.subscribe((value) => {
-		if (value) {
-			style = value;
+	const styleChanger = (value: { style: customStyleType; id: string }) => {
+		if (value && value.id == id && selectedElement == id) {
+			style = { ...value.style };
 			if (customStyler)
 				customStyler.innerHTML = `<style>
 					#${id} {
@@ -74,9 +72,20 @@
 					}
 				</style>`;
 		}
+	};
+	let unsubscribe: Unsubscriber | undefined;
+	$: {
+		if (active) unsubscribe = customStyleContext.subscribe(styleChanger);
+		else {
+			if (unsubscribe) unsubscribe();
+		}
+	}
+	onDestroy(() => {
+		if (unsubscribe) unsubscribe();
 	});
 
 	$: customStyle = `position:relative;width:100%;max-width:${defaultWidth}px;min-height:${defaultHeight}px;padding:${customPadding.top}px ${customPadding.right}px ${customPadding.bottom}px ${customPadding.left}px;`;
+	const contentfulElement = ['heading', 'paragraph'];
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -86,20 +95,20 @@
 	class={`${classname} ${elementId} element`}
 	on:click={(e) => {
 		selectedElement = id;
-		customStyleContext.set(style);
-		if (editor) editor.focus();
+		customStyleContext.set({ style, id });
 		e.stopPropagation();
 	}}
 	{id}
 >
-	<textarea
-		id={`textarea_${id}`}
-		bind:value={content}
-		disabled={!active}
-		class="opacity-0 absolute top-0 left-0 w-0 h-0"
-	/>
-	{#if content}
+	{#if contentfulElement.includes(elementId)}
 		{content}
+		<textarea
+			id={`textarea_${id}`}
+			bind:value={content}
+			disabled={!active}
+			style={`padding:${customPadding.top}px ${customPadding.right}px ${customPadding.bottom}px ${customPadding.left}px;`}
+			class="absolute top-0 left-0 w-full h-full"
+		/>
 	{:else}
 		{name}
 	{/if}
