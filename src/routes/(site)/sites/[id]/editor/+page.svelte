@@ -25,33 +25,15 @@
 	onDestroy(() => {
 		$elements = [];
 	});
-	let selectedElement = '';
 </script>
 
-<div class="p-5 py-0 h-28">
-	<Header editor />
+<div class="p-2">
+	<!-- <Header editor /> -->
 	<Tools />
 </div>
-<div class="relative w-full h-full overflow-hidden p-2" style="height:88%">
+<div class="relative w-full h-full  p-2" style="height:92vh;">
 	<Canvas />
 
 	<ToolsDrawer />
 </div>
-<div class="min-h-screen p-10">
-	{#if $elements}
-		{#each $elements as { id, Component, children, hierarchy, style, classname, elementId, content, name }}
-			<Element
-				bind:id
-				bind:Component
-				bind:children
-				bind:hierarchy
-				bind:style
-				bind:classname
-				bind:elementId
-				bind:content
-				bind:name
-				bind:selectedElement
-			/>
-		{/each}
-	{/if}
-</div>
+<div class="p-0.5" />

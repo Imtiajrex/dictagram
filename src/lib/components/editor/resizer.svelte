@@ -2,9 +2,15 @@
 	import { removeElement, type customStyleType, type hierarchyType } from '$lib/utils/elements';
 
 	import { asDraggable } from 'svelte-drag-and-drop-actions';
+	/**** map all touch events to mouse events ****/
+
+	import mapTouchToMouseFor from 'svelte-touch-to-mouse';
+	import type { Writable } from 'svelte/store';
+	import { getContext, onMount } from 'svelte';
+	import { Trash } from 'tabler-icons-svelte';
 
 	export let containerWidth: number, containerHeight: number;
-	export let padding = {
+	let padding = {
 		top: 0,
 		right: 0,
 		bottom: 0,
@@ -20,35 +26,43 @@
 		initialPadY: number,
 		initialPadding = {} as { [key in 'top' | 'bottom' | 'left' | 'right']: number };
 
-	/**** map all touch events to mouse events ****/
-
-	import mapTouchToMouseFor from 'svelte-touch-to-mouse';
-	import type { Writable } from 'svelte/store';
-	import { getContext } from 'svelte';
-	import { Trash } from 'tabler-icons-svelte';
 	mapTouchToMouseFor('.resizer');
 
 	let device = getContext('active-device-size') as Writable<'desktop' | 'mobile' | 'tablet'>;
 
 	/**** Svelte Event Handling ****/
 	type paddingTypes = 'top' | 'right' | 'bottom' | 'left' | 'all';
+
+	onMount(() => {
+		getPadding();
+	});
+	function getPadding() {
+		if (style[$device]['padding']) {
+			String(style[$device]['padding'])
+				.split(' ')
+				.forEach((p, i) => {
+					p.replace('px', '');
+					padding[dirIndex[i]] = parseInt(p);
+				});
+		}
+	}
 	function onDragMove(x: number, y: number, dir: paddingTypes) {
 		if (resizing) {
 			if (dir == 'top' || dir == 'bottom' || dir == 'all') {
-				containerHeight = initialHeight + (y - initialY) * (dir == 'top' ? -1 : 1);
-				style[$device]['min-height'] = containerHeight + 'px';
+				const height = initialHeight + (y - initialY) * (dir == 'top' ? -1 : 1);
+				containerHeight = height;
+				style[$device]['min-height'] = height + 'px';
 			}
 			if (dir == 'left' || dir == 'right' || dir == 'all') {
-				containerWidth = initialWidth + (x - initialX) * (dir == 'left' ? -1 : 1);
-				style[$device]['max-width'] = containerWidth + 'px';
+				const width = initialWidth + (x - initialX) * (dir == 'left' ? -1 : 1);
+				containerWidth = width;
+				style[$device]['max-width'] = width + 'px';
 			}
 		} else {
 			initialX = x;
 			initialY = y;
-			const width = Number(String(style[$device]['max-width']).replace('px', ''));
-			const height = Number(String(style[$device]['min-height']).replace('px', ''));
-			initialWidth = width > 0 ? width : containerWidth;
-			initialHeight = height > 0 ? height : containerHeight;
+			initialWidth = containerWidth;
+			initialHeight = containerHeight;
 			resizing = true;
 		}
 	}
@@ -56,9 +70,8 @@
 		resizing = false;
 		paddingResizing = false;
 	}
-
+	const dirIndex = ['top', 'right', 'bottom', 'left'] as ('top' | 'right' | 'bottom' | 'left')[];
 	function onDragPadResizer(x: number, y: number, dir: paddingTypes) {
-		console.log('resizing padding');
 		if (paddingResizing) {
 			if (dir == 'all') {
 				padding['top'] = Math.max(0, initialPadding['top'] - (y - initialPadY));
@@ -76,7 +89,11 @@
 					initialPadding[dir] - (x - initialPadX) * (dir == 'left' ? -1 : 1)
 				);
 			}
+			style[$device][
+				'padding'
+			] = `${padding.top}px ${padding.right}px ${padding.bottom}px ${padding.left}px`;
 		} else {
+			getPadding();
 			initialPadding['top'] = padding.top;
 			initialPadding['right'] = padding.right;
 			initialPadding['bottom'] = padding.bottom;
@@ -132,7 +149,6 @@
 		}}
 	/>
 {/each}
-
 {#each dir as d}
 	<div
 		class="resizer absolute {dirClassResizer[d]} {cursorClass[d]}"

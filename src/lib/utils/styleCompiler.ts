@@ -10,8 +10,9 @@ export const styleObjectToCSS = (styleObject: styleObjectType): string => {
 };
 export const styleObjectToCssVariable = (styleObject: styleObjectType, prefix: string): string => {
 	let css = '';
-	for (const [key] of Object.entries(styleObject)) {
-		css += `${key}: var(--${prefix}-${key});`;
+	for (const [key, value] of Object.entries(styleObject)) {
+		if (typeof value === 'object') css += styleObjectToCssVariable(value, `${prefix}-${key}`);
+		else css += `${key}: var(--${prefix}-${key});`;
 	}
 	return css;
 };
