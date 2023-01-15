@@ -11,6 +11,7 @@
 	} from '$lib/utils/elements';
 	import type { customStyleType } from '$lib/utils/elements';
 	import Element from './element.svelte';
+	import { onMount } from 'svelte';
 
 	let device = getContext('active-device-size') as Writable<string>;
 	let tool = getContext('active-tool-drawer') as Writable<string | null>;
@@ -44,10 +45,11 @@
 		customStyleContext.set(null);
 		e.stopPropagation();
 	}}
+	id="canvas"
 	class={`canvas overflow-auto relative w-full h-full bg-white border-2 border-primary mx-auto rounded-md ${sizes[$device]}`}
 >
 	{#if $elements}
-		{#each $elements as { id, Component, children, hierarchy, style, classname, elementId, content, name }}
+		{#each $elements as { id, Component, childEnabled, children, hierarchy, style, classname, elementId, content, name }}
 			<Element
 				bind:id
 				bind:Component
@@ -59,6 +61,7 @@
 				bind:content
 				bind:name
 				bind:selectedElement
+				bind:childEnabled
 			/>
 		{/each}
 	{/if}

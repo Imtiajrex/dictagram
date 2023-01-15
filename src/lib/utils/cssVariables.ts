@@ -13,21 +13,21 @@ const updateVariables = (
 		else variables[`${prefix}-${key}`] = value;
 	}
 };
-const updateCssVariables = (style: customStyleType, variables: variableObjectType) => {
-	updateVariables(style.desktop, variables, 'desktop');
-	updateVariables(style.tablet, variables, 'tablet');
-	updateVariables(style.mobile, variables, 'mobile');
+const updateCssVariables = (style: customStyleType, variables: variableObjectType, id: string) => {
+	updateVariables(style.desktop, variables, id + '-desktop');
+	updateVariables(style.tablet, variables, id + '-tablet');
+	updateVariables(style.mobile, variables, id + '-mobile');
 };
-
-export function cssVariables(node: HTMLElement, style: customStyleType) {
+type argType = { style: customStyleType; id: string };
+export function cssVariables(node: HTMLElement, { style, id }: argType) {
 	const variables = {} as variableObjectType;
-	updateCssVariables(style, variables);
+	updateCssVariables(style, variables, id);
 	setCssVariables(node, variables);
 
 	return {
-		update(style: customStyleType) {
+		update({ style, id }: argType) {
 			const variables = {} as variableObjectType;
-			updateCssVariables(style, variables);
+			updateCssVariables(style, variables, id);
 
 			setCssVariables(node, variables);
 		}

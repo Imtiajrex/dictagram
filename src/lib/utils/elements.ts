@@ -1,3 +1,4 @@
+import { cloneDeep } from 'lodash';
 import { getContext, setContext } from 'svelte';
 import { SvelteElement } from 'svelte/internal';
 import { get, writable, type Writable } from 'svelte/store';
@@ -29,32 +30,54 @@ export type elementType = {
 	style: customStyleType;
 	content?: string;
 	hierarchy: hierarchyType;
-	children: elementType[];
+	children?: elementType[];
+	childEnabled: boolean;
 };
 export type elementsType = Writable<elementType[]>;
 const elements = writable<elementType[]>([]);
+type elementMapType = {
+	[key in elementsKeyListType]: {
+		name: string;
+		Component: any;
+		content?: string;
+		style?: customStyleType;
+		classname?: string;
+		childEnabled: boolean;
+	};
+};
 const elementsMap = {
 	heading: {
 		name: 'Heading',
 		Component: 'h1',
-		content: 'This is a heading'
+		content: 'This is a heading',
+		childEnabled: false,
+		style: {
+			desktop: {
+				padding: '20px 20px 20px 20px'
+			},
+			mobile: {},
+			tablet: {}
+		}
 	},
 	paragraph: {
 		name: 'Paragraph',
 		Component: 'p',
+		childEnabled: false,
 		content: 'This is a paragraph. It is used to write large chunks of text.'
 	},
 	container: {
 		name: 'Container',
 		Component: 'div',
-		classname: 'container'
+		childEnabled: true,
+		classname: 'canvas-container'
 	},
 	grid: {
 		name: 'Grid',
 		Component: 'div',
-		classname: 'grid'
+		childEnabled: true,
+		classname: 'canvas-grid'
 	}
-} as { [key in elementsKeyListType]: elementType };
+} as elementMapType;
 
 export const getElements = () => getContext('elements');
 export const setElements = () => setContext('elements', elements);
@@ -82,21 +105,40 @@ export const addElement = ({
 	elementID: elementsKeyListType;
 	hierarchy?: hierarchyType;
 }) => {
-	if (hierarchy.length === 0) {
-		const element = { ...elementsMap[elementID] };
-		element.id = elementID + '_' + generateID();
-		element.elementId = elementID;
-		element.hierarchy = [element.id];
+	const element = { ...elementsMap[elementID] } as elementType;
+	element.id = elementID + '_' + generateID();
+	element.elementId = elementID;
+	element.hierarchy = [element.id];
+	if (!element.style)
 		element.style = {
 			desktop: {},
 			mobile: {},
 			tablet: {}
 		};
-		elements.update((elements) => {
-			return [...elements, element];
-		});
-		return;
+	else element.style = cloneDeep(element.style);
+	console.log(element);
+	elements.update((elements) => {
+		if (hierarchy.length == 0) return [...elements, element];
+		else {
+			const elementHierarchy = [...hierarchy, element.id];
+			const foundElement = traverseElements(elements, hierarchy);
+
+			if (foundElement && foundElement.children)
+				foundElement.children.push({ ...element, hierarchy: elementHierarchy });
+			return elements;
+		}
+	});
+};
+
+const traverseElements = (elements: elementType[], hierarchy: hierarchyType = []) => {
+	let foundElement;
+	while (hierarchy.length > 0) {
+		const id = hierarchy.shift();
+		if (foundElement && foundElement.children)
+			foundElement = foundElement.children.find((element) => element.id == id);
+		else foundElement = elements.find((element) => element.id == id);
 	}
+	return foundElement;
 };
 
 export const assignElement = ({
@@ -111,6 +153,16 @@ export const assignElement = ({
 export const removeElement = ({ hierarchy }: { hierarchy: hierarchyType }) => {
 	console.log(hierarchy);
 	elements.update((elements) => {
-		return elements.filter((element) => element.id !== hierarchy[0]);
+		if (hierarchy.length == 1) return elements.filter((element) => element.id !== hierarchy[0]);
+		else {
+			const parentElement = traverseElements(elements, [...hierarchy.slice(0, -1)]);
+			if (parentElement && parentElement.children && parentElement.children.length > 0) {
+				parentElement.children = parentElement.children.filter(
+					(element) => element.id !== hierarchy[hierarchy.length - 1]
+				);
+				return elements;
+			}
+			return elements;
+		}
 	});
 };
