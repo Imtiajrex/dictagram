@@ -7,7 +7,7 @@
 	import mapTouchToMouseFor from 'svelte-touch-to-mouse';
 	import type { Writable } from 'svelte/store';
 	import { getContext, onMount } from 'svelte';
-	import { Trash } from 'tabler-icons-svelte';
+	import { DragDrop, Trash } from 'tabler-icons-svelte';
 
 	export let containerWidth: number, containerHeight: number;
 	let padding = {
@@ -46,7 +46,7 @@
 				});
 		}
 	}
-	function onDragMove(x: number, y: number, dir: paddingTypes) {
+	function onDragResize(x: number, y: number, dir: paddingTypes) {
 		if (resizing) {
 			if (dir == 'top' || dir == 'bottom' || dir == 'all') {
 				const height = initialHeight + (y - initialY) * (dir == 'top' ? -1 : 1);
@@ -71,7 +71,7 @@
 		paddingResizing = false;
 	}
 	const dirIndex = ['top', 'right', 'bottom', 'left'] as ('top' | 'right' | 'bottom' | 'left')[];
-	function onDragPadResizer(x: number, y: number, dir: paddingTypes) {
+	function onDragPadResize(x: number, y: number, dir: paddingTypes) {
 		if (paddingResizing) {
 			if (dir == 'all') {
 				padding['top'] = Math.max(0, initialPadding['top'] - (y - initialPadY));
@@ -137,6 +137,7 @@
 			hierarchy
 		});
 	};
+	export let canvasSize = { width: 0, height: 0 };
 </script>
 
 {#each dir as d}
@@ -144,8 +145,9 @@
 		class="resizer padding absolute bg-black {cursorClass[d]}"
 		style={paddingResizerStyle[d]}
 		use:asDraggable={{
-			onDragMove: (x, y) => onDragPadResizer(x, y, d),
-			onDragEnd
+			onDragMove: (x, y) => onDragPadResize(x, y, d),
+			onDragEnd,
+			relativeTo: 'parent'
 		}}
 	/>
 {/each}
@@ -153,8 +155,9 @@
 	<div
 		class="resizer absolute {dirClassResizer[d]} {cursorClass[d]}"
 		use:asDraggable={{
-			onDragMove: (x, y) => onDragMove(x, y, d),
-			onDragEnd
+			onDragMove: (x, y) => onDragResize(x, y, d),
+			onDragEnd,
+			relativeTo: 'parent'
 		}}
 	/>
 {/each}
@@ -163,4 +166,10 @@
 	on:click={remove}
 >
 	<Trash size={18} />
+</button>
+
+<button
+	class="handle w-6 h-6 rounded-sm cursor-move bg-blue-700 shadow-sm flex justify-center items-center absolute top-0 left-0 text-white"
+>
+	<DragDrop size={15} />
 </button>

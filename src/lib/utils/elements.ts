@@ -35,6 +35,9 @@ export type elementType = {
 };
 export type elementsType = Writable<elementType[]>;
 const elements = writable<elementType[]>([]);
+const selectedElement = writable<string>('');
+export const setSelectedElement = () => setContext('selected-element', selectedElement);
+export const getSelectedElement = () => getContext('selected-element');
 type elementMapType = {
 	[key in elementsKeyListType]: {
 		name: string;
@@ -116,15 +119,17 @@ export const addElement = ({
 			tablet: {}
 		};
 	else element.style = cloneDeep(element.style);
-	console.log(element);
 	elements.update((elements) => {
 		if (hierarchy.length == 0) return [...elements, element];
 		else {
 			const elementHierarchy = [...hierarchy, element.id];
+			element.hierarchy = elementHierarchy;
 			const foundElement = traverseElements(elements, hierarchy);
 
-			if (foundElement && foundElement.children)
-				foundElement.children.push({ ...element, hierarchy: elementHierarchy });
+			if (foundElement)
+				if (foundElement.children) foundElement.children.push(element);
+				else foundElement.children = [element];
+			console.log(elements);
 			return elements;
 		}
 	});

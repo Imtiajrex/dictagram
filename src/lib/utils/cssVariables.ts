@@ -35,6 +35,7 @@ export function cssVariables(node: HTMLElement, { style, id }: argType) {
 }
 function setCssVariables(node: HTMLElement, variables: variableObjectType) {
 	for (const name in variables) {
+		if (node.style.getPropertyValue(`--${name}`) === variables[name]) continue;
 		node.style.setProperty(`--${name}`, variables[name]);
 	}
 }
