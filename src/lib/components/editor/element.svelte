@@ -5,27 +5,42 @@
 		type hierarchyType,
 		type customStyleType,
 		type elementsKeyListType,
-		addElement
+		addElement,
+		getSelectedElement
 	} from '$lib/utils/elements';
 	import { getContext, onDestroy, onMount } from 'svelte';
 	import type { Unsubscriber, Writable } from 'svelte/store';
 	import Resizer from './resizer.svelte';
 	import * as _ from 'lodash';
 	import { cssVariables } from '$lib/utils/cssVariables';
-	import { styleObjectToCSS, styleObjectToCssVariable } from '$lib/utils/styleCompiler';
-	import { asDropZone, type DropOperation } from 'svelte-drag-and-drop-actions';
-
-	export let name: string;
-	export let Component: any;
-	export let id: string;
-	export let elementId: string;
-	export let classname: string = '';
-	export let style: customStyleType;
-	export let content: string = '';
-	export let hierarchy: hierarchyType;
-	export let children: elementType[] = [];
-	export let selectedElement: string;
-	export let childEnabled: boolean;
+	import {
+		styleObjectToCSS,
+		styleObjectToVariableBasedCss,
+		styleObjectToCssVariables
+	} from '$lib/utils/styleCompiler';
+	import {
+		asDraggable,
+		asDroppable,
+		asDropZone,
+		type DropOperation,
+		type Position
+	} from 'svelte-drag-and-drop-actions';
+	import { DragDrop } from 'tabler-icons-svelte';
+	import { cloneDeep } from 'lodash';
+	let selectedElement = getSelectedElement() as Writable<string>;
+	export let element: elementType;
+	$: ({
+		name,
+		Component,
+		id,
+		elementId,
+		style,
+		classname,
+		childEnabled,
+		hierarchy,
+		children,
+		content
+	} = element);
 
 	let customStyleContext = getContext('custom-style') as Writable<{
 		style: customStyleType;
@@ -51,6 +66,8 @@
 		desktopStyler = document.getElementById(`style_desktop_${id}`) as HTMLElement;
 		tabletStyler = document.getElementById(`style_tablet_${id}`) as HTMLElement;
 		mobileStyler = document.getElementById(`style_mobile_${id}`) as HTMLElement;
+
+		updateDeviceStyles();
 	});
 	const getWidthHeight = () => {
 		elementComponent = document.getElementById(id) as HTMLElement;
@@ -59,6 +76,9 @@
 			containerHeight = elementComponent.getBoundingClientRect().height;
 		}
 	};
+
+	let varStyle = '';
+	let desktopStyle = '';
 	const updateStyle = (css: string, device: any) => {
 		const deviceElementMap = {
 			desktop: desktopStyler,
@@ -84,20 +104,27 @@
 			}
 		}
 	};
-	$: {
+	const updateDeviceStyles = () => {
+		varStyle = '';
 		['desktop', 'tablet', 'mobile'].forEach((device) => {
 			const val = device as 'desktop' | 'tablet' | 'mobile';
-			const css = styleObjectToCssVariable(style[val], `${id}-${device}`);
+			const { css, variables } = styleObjectToVariableBasedCss(style[val], `${id}-${device}`);
+
+			varStyle += variables;
 			updateStyle(css, device);
 		});
+	};
+	$: {
+		if (style) updateDeviceStyles();
 	}
-	$: active = selectedElement == id;
-
+	$: active = $selectedElement == id;
+	let movingElement = getContext('moving-element') as Writable<hierarchyType>;
 	const contentfulElement = ['heading', 'paragraph'];
 	let tool = getContext('active-tool-drawer') as Writable<string | null>;
 	const onDrop = (x: number, y: number, Operation: DropOperation, DataOffered: any) => {
 		if (!childEnabled) return 'not-allowed';
-		console.log(childEnabled, elementId, DataOffered);
+
+		if (childMoving) return 'not-allowed';
 		addElement({
 			elementID: DataOffered.element as elementsKeyListType,
 			hierarchy: [...hierarchy]
@@ -105,6 +132,31 @@
 		tool.set(null);
 		return DataOffered.element;
 	};
+	let isHovering = false;
+	export let canvasSize = {
+		width: 0,
+		height: 0
+	};
+	let moving = false;
+	let initialMargin = {
+		x: 0,
+		y: 0
+	};
+	const startDrag = () => {
+		movingElement.set(hierarchy);
+	};
+	const moveElement = (x: number, y: number) => {
+		style[$device]['margin-left'] = x + 'px';
+		style[$device]['margin-top'] = y + 'px';
+	};
+	let childMoving = false;
+	$: {
+		const droppedHierarchy = cloneDeep($movingElement);
+		droppedHierarchy.pop();
+		childMoving =
+			droppedHierarchy.length === hierarchy.length &&
+			droppedHierarchy.every((value, index) => value === hierarchy[index]);
+	}
 </script>
 
 <span class="h-0 opacity-0 absolute">
@@ -113,6 +165,7 @@
 	<span id={`style_mobile_${id}`} />
 </span>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <svelte:element
 	this={Component}
 	class={`${classname} ${id} element`}
@@ -120,29 +173,33 @@
 		TypesToAccept: { element: 'copy' },
 		onDrop
 	}}
+	use:asDraggable={{
+		onDragMove: moveElement,
+
+		onlyFrom: '.handle',
+		onDragEnd: () => {
+			movingElement.set([]);
+		}
+	}}
+	on:dragstart={startDrag}
+	use:asDroppable={{
+		DataToOffer: { element: elementId }
+	}}
 	on:click={(e) => {
-		selectedElement = id;
+		$selectedElement = id;
 		customStyleContext.set({ style, id });
 		e.stopPropagation();
 	}}
-	use:cssVariables={{ style, id }}
+	on:mouseover|stopPropagation={() => (isHovering = true)}
+	on:mouseout|stopPropagation={() => (isHovering = false)}
+	style={`${varStyle}${isHovering ? 'outline: 1px solid seagreen;' : ''}${
+		childMoving && 'max-height:' + `var(--${id}-${$device}-min-height)`
+	}`}
 	{id}
 >
-	{#if children.length > 0 && childEnabled}
+	{#if children && children.length > 0 && childEnabled}
 		{#each children as child}
-			<svelte:self
-				bind:id={child.id}
-				bind:Component={child.Component}
-				bind:children={child.children}
-				bind:hierarchy={child.hierarchy}
-				bind:style={child.style}
-				bind:classname={child.classname}
-				bind:elementId={child.elementId}
-				bind:content={child.content}
-				bind:name={child.name}
-				bind:childEnabled={child.childEnabled}
-				bind:selectedElement
-			/>
+			<svelte:self bind:element={child} {canvasSize} />
 		{/each}
 	{/if}
 	{#if contentfulElement.includes(elementId)}
@@ -152,12 +209,13 @@
 			bind:value={content}
 			disabled={!active}
 			class="absolute top-0 left-0 w-full h-full {id}"
+			style="margin:0"
 		/>
-	{:else if children.length == 0}
+	{:else if !children || (children && children.length == 0)}
 		{name}
 	{/if}
 	{#if active}
-		<Resizer bind:style bind:containerWidth bind:containerHeight {hierarchy} />
+		<Resizer bind:style bind:containerWidth bind:containerHeight {hierarchy} {canvasSize} />
 	{/if}
 </svelte:element>
 
@@ -180,8 +238,5 @@
 		position: relative;
 		width: 100%;
 		height: max-content;
-	}
-	.element:hover {
-		outline: 1px solid lightseagreen;
 	}
 </style>

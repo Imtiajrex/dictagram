@@ -10,7 +10,8 @@
 		getElements,
 		setElements,
 		type elementsType,
-		type customStyleType
+		type customStyleType,
+		setSelectedElement
 	} from '$lib/utils/elements';
 	import { onDestroy } from 'svelte';
 	import Element from '$lib/components/editor/element.svelte';
@@ -21,6 +22,7 @@
 	setContext('custom-style', writable<customStyleType | null>(null));
 	setContext('adjustments-active', writable(false));
 	setElements();
+	setSelectedElement();
 	let elements = getElements() as elementsType;
 	onDestroy(() => {
 		$elements = [];
@@ -33,7 +35,6 @@
 </div>
 <div class="relative w-full h-full  p-2" style="height:92vh;">
 	<Canvas />
-
 	<ToolsDrawer />
 </div>
 <div class="p-0.5" />

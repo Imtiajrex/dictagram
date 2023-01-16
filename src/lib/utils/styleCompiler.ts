@@ -8,11 +8,24 @@ export const styleObjectToCSS = (styleObject: styleObjectType): string => {
 	}
 	return css;
 };
-export const styleObjectToCssVariable = (styleObject: styleObjectType, prefix: string): string => {
+export const styleObjectToVariableBasedCss = (styleObject: styleObjectType, prefix: string) => {
 	let css = '';
+	let variables = '';
 	for (const [key, value] of Object.entries(styleObject)) {
-		if (typeof value === 'object') css += styleObjectToCssVariable(value, `${prefix}-${key}`);
-		else css += `${key}: var(--${prefix}-${key});`;
+		if (typeof value === 'object') {
+			css += styleObjectToVariableBasedCss(value, `${prefix}-${key}`);
+		} else {
+			css += `${key}: var(--${prefix}-${key});`;
+			variables += `--${prefix}-${key}: ${value};`;
+		}
 	}
-	return css;
+	return { css, variables };
+};
+export const styleObjectToCssVariables = (styleObject: styleObjectType, prefix: string) => {
+	let variables = '';
+	for (const [key, value] of Object.entries(styleObject)) {
+		if (typeof value === 'object') styleObjectToCssVariables(value, `${prefix}-${key}`);
+		else variables += `--${prefix}-${key}: ${value};`;
+	}
+	return variables;
 };
